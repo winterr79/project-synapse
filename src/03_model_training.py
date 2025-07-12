@@ -44,10 +44,12 @@ if __name__ == "__main__":
         per_device_eval_batch_size=4,
         weight_decay=0.01,
         logging_steps=100,
-        evaluation_strategy="steps",  # Explicitly set the evaluation strategy
-        eval_steps=500,               # Evaluate every 500 steps
-        save_steps=500,               # Save every 500 steps (matches eval_steps)
+        evaluation_strategy="steps",
+        eval_steps=500,
+        save_steps=500,
         load_best_model_at_end=True,
+        report_to="none",
+        dataloader_num_workers=1,  # Force single-worker data loading to prevent hangs
     )
 
     # 6. Create the Trainer
