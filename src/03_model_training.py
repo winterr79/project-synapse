@@ -22,13 +22,7 @@ if __name__ == "__main__":
     tokenized_datasets = load_from_disk(PROCESSED_DATASET_PATH)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
 
-    # --- FOR CPU SANITY CHECK ---
-    # To make training feasible on a CPU, we'll use a tiny subset of the data.
-    # We select 100 training examples and 50 validation examples.
-    print("--- RUNNING IN CPU SANITY CHECK MODE ---")
-    train_dataset_subset = tokenized_datasets["train"].select(range(100))
-    eval_dataset_subset = tokenized_datasets["validation"].select(range(50))
-    # --------------------------
+    
 
     # 3. Load the pre-trained model
     # AutoModelForSeq2SeqLM is used for sequence-to-sequence tasks like summarization
@@ -53,7 +47,7 @@ if __name__ == "__main__":
         do_eval=True,  # <--- THIS IS THE CORRECTED LINE
         eval_steps=500,
         save_steps=500,
-        # load_best_model_at_end=True, # Disabled for CPU sanity check to resolve strategy conflict
+        load_best_model_at_end=True,
     )
 
     # 6. Create the Trainer
@@ -62,8 +56,8 @@ if __name__ == "__main__":
         args=training_args,
         tokenizer=tokenizer,
         data_collator=data_collator,
-        train_dataset=train_dataset_subset,      # Use the subset here
-        eval_dataset=eval_dataset_subset,        # And here
+        train_dataset=tokenized_datasets["train"],
+        eval_dataset=tokenized_datasets["validation"],
     )
 
     # 7. Start Fine-Tuning
