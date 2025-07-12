@@ -31,10 +31,8 @@ if __name__ == "__main__":
         # Tokenize the inputs (articles)
         model_inputs = tokenizer(inputs, max_length=1024, truncation=True)
 
-        # Tokenize the outputs (summaries)
-        # In T5, the 'labels' are the tokenized target text
-        with tokenizer.as_target_tokenizer():
-            labels = tokenizer(examples["highlights"], max_length=128, truncation=True)
+        # Tokenize the outputs (summaries) using the text_target argument
+        labels = tokenizer(text_target=examples["highlights"], max_length=128, truncation=True)
 
         # Add the tokenized labels to our model inputs
         model_inputs["labels"] = labels["input_ids"]
