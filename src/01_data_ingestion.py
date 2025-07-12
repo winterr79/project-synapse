@@ -1,29 +1,26 @@
-# Import the necessary library from the 'datasets' package
+import os
 from datasets import load_dataset
 
-# This is the main execution block, it runs when you execute the script directly
+# This is the main execution block
 if __name__ == "__main__":
-    # Define the name of the dataset we want to download from Hugging Face
-    # We are using 'cnn_dailymail' as a robust alternative to 'samsum'.
-    # We will use a specific version '3.0.0' for consistency.
+    # Define the name of the dataset and version
     dataset_name = "cnn_dailymail"
     dataset_version = "3.0.0"
     
+    # Define the local path to save the data
+    # This creates a path like 'data/cnn_dailymail_3.0.0'
+    local_save_path = os.path.join("data", f"{dataset_name}_{dataset_version}")
+
     # Use the load_dataset function to download and cache the dataset
     print(f"Downloading dataset: {dataset_name} (version {dataset_version})")
-    # Note: This dataset is large and may take a significant time to download.
     dataset = load_dataset(dataset_name, dataset_version)
     
-    # The dataset is a dictionary-like object, let's see what's inside
+    # *** NEW, CRITICAL STEP ***
+    # Save the downloaded dataset to our local project directory
+    print(f"Saving dataset to local path: {local_save_path}")
+    dataset.save_to_disk(local_save_path)
+
     print("\nDataset structure:")
     print(dataset)
     
-    # Let's inspect one example from the 'train' split to understand its columns
-    print("\nExample from the 'train' split:")
-    example = dataset['train'][0]
-    
-    # Print the article and its summary (highlights)
-    print("\nARTICLE:")
-    print(example['article'])
-    print("\nSUMMARY (HIGHLIGHTS):")
-    print(example['highlights'])
+    print("\nData ingestion and local save complete.")
