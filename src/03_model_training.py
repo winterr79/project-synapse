@@ -48,8 +48,9 @@ if __name__ == "__main__":
         eval_steps=500,
         save_steps=500,
         load_best_model_at_end=True,
+        save_total_limit=3,  # Only keep the best 3 checkpoints to save disk space
         report_to="none",
-        dataloader_num_workers=1,  # Force single-worker data loading to prevent hangs
+        dataloader_num_workers=1,
     )
 
     # 6. Create the Trainer
