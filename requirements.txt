@@ -1,0 +1,13 @@
+# Core ML/AI Libraries
+transformers
+torch
+datasets
+accelerate
+bitsandbytes
+sentencepiece
+
+# UI and Application
+gradio
+
+# Utilities
+python-dotenv

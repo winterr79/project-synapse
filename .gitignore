@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.venv/
+venv/
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Data and Models - IMPORTANT
+# We will manage these outside of Git
+data/
+models/
+*.pt
+*.bin
+*.safetensors
+
+# Notebooks
+.ipynb_checkpoints
+
+# OS-specific
+.DS_Store
+Thumbs.db
