@@ -66,7 +66,7 @@ if __name__ == "__main__":
 
     # 7. Start Fine-Tuning
     print("Starting model fine-tuning...")
-    trainer.train()
+    trainer.train(resume_from_checkpoint=True)
     print("Training complete.")
 
     # 8. Save the final model and tokenizer
