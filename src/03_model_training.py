@@ -48,9 +48,10 @@ if __name__ == "__main__":
         eval_steps=500,
         save_steps=500,
         load_best_model_at_end=True,
-        save_total_limit=3,  # Only keep the best 3 checkpoints to save disk space
+        save_total_limit=3,
         report_to="none",
         dataloader_num_workers=1,
+        fp16=True,  # Enable mixed precision for faster training
     )
 
     # 6. Create the Trainer
