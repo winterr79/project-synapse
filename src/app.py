@@ -11,24 +11,34 @@ FEEDBACK_FILE_PATH = os.path.join("data", "feedback_data.csv")
 # --- Backend Functions ---
 
 def save_feedback(original_text, generated_summary, corrected_summary):
-    """Saves the user's feedback to a CSV file."""
+    """Saves the user's feedback to a CSV file in a robust way."""
     try:
-        # Create a new DataFrame with the feedback
-        new_feedback = pd.DataFrame({
-            'original_text': [original_text],
-            'generated_summary': [generated_summary],
-            'corrected_summary': [corrected_summary]
-        })
-
-        # Check if the file already exists
-        if os.path.exists(FEEDBACK_FILE_PATH):
-            # Append without writing the header
-            new_feedback.to_csv(FEEDBACK_FILE_PATH, mode='a', header=False, index=False)
-        else:
-            # Write a new file with the header
-            new_feedback.to_csv(FEEDBACK_FILE_PATH, mode='w', header=True, index=False)
+        # Define the header
+        header = ['original_text', 'generated_summary', 'corrected_summary']
         
-        # Return a confirmation message to the user
+        # Create a new dictionary with the feedback
+        new_feedback = {
+            'original_text': original_text,
+            'generated_summary': generated_summary,
+            'corrected_summary': corrected_summary
+        }
+
+        # Check if the file exists and is not empty
+        file_exists = os.path.exists(FEEDBACK_FILE_PATH) and os.path.getsize(FEEDBACK_FILE_PATH) > 0
+
+        # Open the file in append mode
+        with open(FEEDBACK_FILE_PATH, 'a', newline='', encoding='utf-8') as f:
+            # Use Python's built-in csv writer for more control
+            import csv
+            writer = csv.DictWriter(f, fieldnames=header)
+
+            # If the file is new, write the header first
+            if not file_exists:
+                writer.writeheader()
+            
+            # Write the new feedback row
+            writer.writerow(new_feedback)
+        
         return "✅ Feedback saved successfully! Thank you."
     except Exception as e:
         print(f"Error saving feedback: {e}")
