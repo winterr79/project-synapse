@@ -8,6 +8,7 @@ from utils import summarize_text
 FEEDBACK_FILE_PATH = os.path.join("data", "feedback_data.csv")
 MODEL_V1_PATH = os.path.join("models", "t5-small-finetuned-cnn")
 MODEL_V2_PATH = os.path.join("models", "t5-small-finetuned-cnn-v2")
+MODEL_V3_PATH = os.path.join("models", "t5-small-finetuned-cnn-v3")
 
 # --- Backend Functions ---
 # (The save_feedback function remains the same as before)
@@ -27,12 +28,14 @@ def save_feedback(original_text, generated_summary, corrected_summary):
         print(f"Error saving feedback: {e}")
         return f"❌ Error saving feedback: {e}"
 
+# Update the interface function
 def summarization_interface(model_selection, article_text):
-    """
-    Main interface function, now takes a model selection.
-    """
-    # Determine which model path to use based on the dropdown selection
-    model_path = MODEL_V2_PATH if model_selection == "V2 (Improved)" else MODEL_V1_PATH
+    if model_selection == "V2 (Improved)":
+        model_path = MODEL_V2_PATH
+    elif model_selection == "V3 (Latest)":
+        model_path = MODEL_V3_PATH
+    else:
+        model_path = MODEL_V1_PATH
     
     summary = summarize_text(article_text, model_path)
     return summary, summary
@@ -43,9 +46,8 @@ if __name__ == "__main__":
         gr.Markdown("# Project Synapse: An Adaptive Summarizer")
         gr.Markdown("Select a model version, summarize text, then correct the summary to help the model learn.")
 
-        # NEW: Model selection dropdown
         model_choice = gr.Dropdown(
-            ["V1 (Original)", "V2 (Improved)"], label="Model Version", value="V1 (Original)"
+            ["V1 (Original)", "V2 (Improved)", "V3 (Latest)"], label="Model Version", value="V3 (Latest)"
         )
 
         with gr.Row():
