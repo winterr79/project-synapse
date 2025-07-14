@@ -17,25 +17,30 @@ if __name__ == "__main__":
     # Path to the model we want to continue training (our fine-tuned model)
     MODEL_TO_IMPROVE_PATH = os.path.join("models", "t5-small-finetuned-cnn")
     # Path where the newly improved model will be saved
-    IMPROVED_MODEL_PATH = os.path.join("models", "t5-small-finetuned-cnn-v2")
+    IMPROVED_MODEL_PATH = os.path.join("models", "t5-small-finetuned-cnn-v3")
     # Path to our collected feedback data
     FEEDBACK_DATA_PATH = os.path.join("data", "feedback_data.csv")
 
-    # 2. Load the feedback data using Pandas
+    # 2. Check if feedback data exists
+    if not os.path.exists(FEEDBACK_DATA_PATH) or pd.read_csv(FEEDBACK_DATA_PATH).empty:
+        print("Feedback file is empty or does not exist. No new learning to perform.")
+        exit() # Exit the script gracefully
+
+    # 3. Load the feedback data using Pandas
     print(f"Loading feedback data from: {FEEDBACK_DATA_PATH}")
     feedback_df = pd.read_csv(FEEDBACK_DATA_PATH)
 
-    # 3. Convert the Pandas DataFrame into a Hugging Face Dataset object
+    # 4. Convert the Pandas DataFrame into a Hugging Face Dataset object
     # The 'from_pandas' method makes this easy
     feedback_dataset = Dataset.from_pandas(feedback_df)
     print("Feedback data loaded into Hugging Face Dataset format.")
 
-    # 4. Load the tokenizer and the model we want to improve
+    # 5. Load the tokenizer and the model we want to improve
     print(f"Loading model to improve from: {MODEL_TO_IMPROVE_PATH}")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_TO_IMPROVE_PATH)
     model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_TO_IMPROVE_PATH)
 
-    # 5. Preprocess the feedback data (similar to our original preprocessing)
+    # 6. Preprocess the feedback data (similar to our original preprocessing)
     def preprocess_feedback_function(examples):
         prefix = "summarize: "
         # The 'original_text' is our input
@@ -51,7 +56,7 @@ if __name__ == "__main__":
     print("Preprocessing feedback data...")
     tokenized_feedback_dataset = feedback_dataset.map(preprocess_feedback_function, batched=True)
 
-    # 6. Define Training Arguments for this learning phase
+    # 7. Define Training Arguments for this learning phase
     # We use a very small learning rate because we are fine-tuning an already-trained model
     # We also train for more epochs because the dataset is tiny
     training_args = Seq2SeqTrainingArguments(
@@ -64,7 +69,7 @@ if __name__ == "__main__":
         report_to="none",
     )
 
-    # 7. Create the Trainer
+    # 8. Create the Trainer
     data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)
     trainer = Seq2SeqTrainer(
         model=model,
@@ -74,12 +79,12 @@ if __name__ == "__main__":
         data_collator=data_collator,
     )
 
-    # 8. Start the Continual Learning (Fine-tuning)
+    # 9. Start the Continual Learning (Fine-tuning)
     print("Starting continual learning...")
     trainer.train()
     print("Learning complete.")
 
-    # 9. Save the newly improved model
+    # 10. Save the newly improved model
     print(f"Saving the improved model to {IMPROVED_MODEL_PATH}")
     trainer.save_model(IMPROVED_MODEL_PATH)
-    print("Model V2 saved successfully.")
+    print("Model V3 saved successfully.")
