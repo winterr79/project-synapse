@@ -3,25 +3,24 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 # Global cache for the model and tokenizer to avoid reloading them every time
-# This is a simple optimization for our application
 model_cache = {}
 
-def summarize_text(text_to_summarize: str) -> str:
+def summarize_text(text_to_summarize: str, model_path: str) -> str:
     """
-    Loads the fine-tuned T5 model and generates a summary for the given text.
+    Loads a specified fine-tuned T5 model and generates a summary.
     Uses a simple cache to avoid reloading the model on every call.
     """
-    model_name = "models/t5-small-finetuned-cnn"
-
-    # Check if model and tokenizer are already in cache
-    if model_name not in model_cache:
-        print(f"Loading model and tokenizer for the first time: {model_name}")
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-        model_cache[model_name] = (model, tokenizer)
+    # Use the 'model_path' parameter for caching and loading
+    if model_path not in model_cache:
+        print(f"Loading model and tokenizer for the first time: {model_path}")
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
+        # Store the loaded model and tokenizer in the cache using the path as the key
+        model_cache[model_path] = (model, tokenizer)
     else:
         print("Loading model and tokenizer from cache.")
-        model, tokenizer = model_cache[model_name]
+        # Retrieve the model and tokenizer from the cache
+        model, tokenizer = model_cache[model_path]
 
     # Prepare the input for the T5 model
     prefix = "summarize: "

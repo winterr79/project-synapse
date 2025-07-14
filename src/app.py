@@ -1,100 +1,74 @@
 # src/app.py
 
 import gradio as gr
-import pandas as pd
 import os
-from utils import summarize_text # Import our summarization function
+from utils import summarize_text
 
-# Define the path for our feedback data
+# --- Constants and Setup ---
 FEEDBACK_FILE_PATH = os.path.join("data", "feedback_data.csv")
+MODEL_V1_PATH = os.path.join("models", "t5-small-finetuned-cnn")
+MODEL_V2_PATH = os.path.join("models", "t5-small-finetuned-cnn-v2")
 
 # --- Backend Functions ---
-
+# (The save_feedback function remains the same as before)
 def save_feedback(original_text, generated_summary, corrected_summary):
-    """Saves the user's feedback to a CSV file in a robust way."""
     try:
-        # Define the header
+        import csv
         header = ['original_text', 'generated_summary', 'corrected_summary']
-        
-        # Create a new dictionary with the feedback
-        new_feedback = {
-            'original_text': original_text,
-            'generated_summary': generated_summary,
-            'corrected_summary': corrected_summary
-        }
-
-        # Check if the file exists and is not empty
+        new_feedback = {'original_text': original_text, 'generated_summary': generated_summary, 'corrected_summary': corrected_summary}
         file_exists = os.path.exists(FEEDBACK_FILE_PATH) and os.path.getsize(FEEDBACK_FILE_PATH) > 0
-
-        # Open the file in append mode
         with open(FEEDBACK_FILE_PATH, 'a', newline='', encoding='utf-8') as f:
-            # Use Python's built-in csv writer for more control
-            import csv
             writer = csv.DictWriter(f, fieldnames=header)
-
-            # If the file is new, write the header first
             if not file_exists:
                 writer.writeheader()
-            
-            # Write the new feedback row
             writer.writerow(new_feedback)
-        
         return "✅ Feedback saved successfully! Thank you."
     except Exception as e:
         print(f"Error saving feedback: {e}")
         return f"❌ Error saving feedback: {e}"
 
-def summarization_interface(article_text):
+def summarization_interface(model_selection, article_text):
     """
-    The main interface function. Takes article text, returns the generated
-    summary to two places: the main summary output and the 'corrected' box.
+    Main interface function, now takes a model selection.
     """
-    summary = summarize_text(article_text)
-    # The function now returns the summary twice.
-    # The first goes to the 'Generated Summary' output box.
-    # The second goes to the 'Corrected Summary' box to serve as a starting point for edits.
+    # Determine which model path to use based on the dropdown selection
+    model_path = MODEL_V2_PATH if model_selection == "V2 (Improved)" else MODEL_V1_PATH
+    
+    summary = summarize_text(article_text, model_path)
     return summary, summary
 
 # --- Gradio UI Definition ---
-
 if __name__ == "__main__":
-    # Use gr.Blocks for more complex layouts with multiple components and buttons
     with gr.Blocks(title="Project Synapse") as app_interface:
         gr.Markdown("# Project Synapse: An Adaptive Summarizer")
-        gr.Markdown("Enter text to summarize, then correct the summary to help the model learn.")
+        gr.Markdown("Select a model version, summarize text, then correct the summary to help the model learn.")
+
+        # NEW: Model selection dropdown
+        model_choice = gr.Dropdown(
+            ["V1 (Original)", "V2 (Improved)"], label="Model Version", value="V1 (Original)"
+        )
 
         with gr.Row():
-            # Define the input components
             article_input = gr.Textbox(lines=15, label="Original Text", placeholder="Paste your article or text here...")
-            
             with gr.Column():
-                # Define the output components
                 generated_summary_output = gr.Textbox(lines=5, label="Generated Summary")
                 corrected_summary_input = gr.Textbox(lines=5, label="Corrected Summary (Edit here)", interactive=True)
         
-        # Define the buttons
         summarize_button = gr.Button("Summarize")
         save_feedback_button = gr.Button("Save Feedback")
-
-        # Define a component to show confirmation messages
         status_message = gr.Markdown()
 
-        # --- Define Component Interactions (How the UI works) ---
-
-        # When the 'Summarize' button is clicked:
+        # --- Component Interactions ---
         summarize_button.click(
-            fn=summarization_interface,      # Call our main function
-            inputs=[article_input],           # Pass the article text as input
-            outputs=[generated_summary_output, corrected_summary_input] # Update both summary boxes
+            fn=summarization_interface,
+            inputs=[model_choice, article_input], # Pass the dropdown value as an input
+            outputs=[generated_summary_output, corrected_summary_input]
         )
-
-        # When the 'Save Feedback' button is clicked:
         save_feedback_button.click(
-            fn=save_feedback,               # Call the save function
-            inputs=[article_input, generated_summary_output, corrected_summary_input], # Pass all 3 text boxes
-            outputs=[status_message]        # Show the confirmation message
+            fn=save_feedback,
+            inputs=[article_input, generated_summary_output, corrected_summary_input],
+            outputs=[status_message]
         )
 
-    # Launch the web server
     print("Launching Gradio app...")
     app_interface.launch()
